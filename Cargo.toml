@@ -1,0 +1,11 @@
+[package]
+name = "lunch-bot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = "0.4.39"
+dotenv = "0.15.0"
+reqwest = { version = "0.12.12", features = ["blocking"] }
+serde = "1.0.217"
+serde_json = "1.0.137"

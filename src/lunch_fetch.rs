@@ -1,0 +1,42 @@
+// This file contains methods that interact with the "Na tácu" API
+
+const API_URL: &str = "https://apiv2.natacu.cz/graphql";
+
+use serde_json::{Value, json};
+use reqwest::blocking::Client;
+
+pub fn fetch_food() -> String {
+    let canteen_id: u8 = dotenv::var("CANTEEN_ID").unwrap().parse().unwrap();
+    // Multiplied by 1000, because the API takes values in milliseconds, not seconds
+    let timestamp: i64 = chrono::Utc::now().timestamp() * 1000;
+    // Parse the request body
+    // We do this to modify the query variables
+    let request_body_str = r#"{
+        "operationName": "canteenOffersQuery",
+        "variables": {
+            "query": {
+                "canteenId": 0,
+                "from": "0",
+                "to": "0",
+                "order": "ASC"
+            }
+        },
+        "query": "query canteenOffersQuery($query: GetOffersInput!) {\n  canteenOffers(query: $query) {\n    id\n    date\n    food {\n      id\n      name\n      averageRating\n      __typename\n    }\n    __typename\n  }\n}"
+    }"#;
+    let mut request_body: Value = serde_json::from_str(request_body_str).unwrap();
+
+    // Modifying the request body
+    request_body["variables"]["query"]["canteenId"] = json!(canteen_id);
+    request_body["variables"]["query"]["from"] = json!(timestamp.to_string());
+    request_body["variables"]["query"]["to"] = json!(timestamp.to_string());
+
+
+    // Sending the request
+    let client = Client::new();
+    let food_response = client.post(API_URL)
+        .header("Content-Type", "application/json")
+        .body(serde_json::to_string(&request_body).unwrap())
+        .send().unwrap();
+
+    food_response.text().unwrap()
+}
