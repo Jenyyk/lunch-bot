@@ -5,10 +5,10 @@ const API_URL: &str = "https://apiv2.natacu.cz/graphql";
 use serde_json::{Value, json};
 use reqwest::blocking::Client;
 
-pub fn fetch_food() -> Value {
+pub fn fetch_food(time_delay: i64) -> Value {
     let canteen_id: u8 = dotenv::var("CANTEEN_ID").unwrap_or("1".to_string()).parse().unwrap_or(1);
     // Multiplied by 1000, because the API takes values in milliseconds, not seconds
-    let timestamp: i64 = chrono::Utc::now().timestamp() * 1000;
+    let timestamp: i64 = (chrono::Utc::now().timestamp() + time_delay) * 1000;
     // Parse the request body
     // We do this to modify the query variables
     let request_body_str = r#"{

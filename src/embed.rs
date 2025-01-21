@@ -11,12 +11,12 @@ pub struct Embed {
 }
 
 impl Embed {
-    pub fn new(lunch_number: u8, lunch_name: &str, image_url: Option<String>, embed_color: u32, mut rating: String) -> Self {
+    pub fn new(lunch_number: u8, lunch_name: &str, image_url: Option<String>, date: String, embed_color: u32, mut rating: String) -> Self {
         if rating == "null" { rating = "Bez hodnocení".to_string(); }
         else { rating = (&rating[..3]).to_string(); }
         Self {
             author: Author{
-                name: ("Oběd ".to_string() + &lunch_number.to_string()).to_string(),
+                name: ("Oběd ".to_string() + &lunch_number.to_string() + " · " + &date).to_string(),
                 icon_url: "https://www.gypce.cz/wp-content/uploads/2013/06/gypce-1.jpg".to_string(),
             },
             description: ("# ".to_string() + lunch_name),

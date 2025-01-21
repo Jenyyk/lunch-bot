@@ -2,13 +2,14 @@ mod lunch_fetch;
 mod embed;
 
 use serde_json::Value;
+use rand::Rng;
+
 fn main() {
-    food_loop(0_u8);
-    food_loop(1_u8);
+    // food_loop(0);
 }
 
-fn food_loop(days_forward: u8) {
-    let food_struct: Value = lunch_fetch::fetch_food();
+fn food_loop(days_forward: i16) {
+    let food_struct: Value = lunch_fetch::fetch_food(days_forward as i64 * 86400_i64);
 
     // Getting todays Lunches
     let mut embed_array: Vec<embed::Embed> = Vec::new();
@@ -16,7 +17,12 @@ fn food_loop(days_forward: u8) {
         .get(0).unwrap()
         ["food"].as_array().unwrap();
 
+    // count which lunch i am on
     let mut lunch_counter: u8 = 1_u8;
+
+    // Creating a nice color
+    let color: u32 = rand::thread_rng().gen_range(0..=16777215);
+
     // Construct JSON of each lunch
     for offer in offer_array {
         // Formats the image_url, as it can be missing for some foods
@@ -25,13 +31,24 @@ fn food_loop(days_forward: u8) {
         if image_url != "" {
             trimmed_image_url = Some((&image_url[1..&image_url.len()-1]).to_string());
         }
+        // Formats the date (gotta love the czech language)
+        let date: String;
+        date = match days_forward {
+            0 => "Dnes".to_string(),
+            1 => "Zítra".to_string(),
+            2 => format!("Za {days_forward} dny").to_string(),
+            3 => format!("Za {days_forward} dny").to_string(),
+            4 => format!("Za {days_forward} dny").to_string(),
+            _ => format!("Za {days_forward} dnů").to_string(),
+        };
 
         // Constructing the embed
         let new_embed = embed::Embed::new(
             lunch_counter,
             offer["name"].as_str().unwrap_or(""),
             trimmed_image_url,
-            5_u32,
+            date,
+            color,
             offer["averageRating"].to_string(),
         );
         embed_array.push(new_embed);
