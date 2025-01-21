@@ -40,3 +40,34 @@ pub fn fetch_food() -> Value {
 
     serde_json::from_str(&food_response.text().unwrap()).unwrap()
 }
+
+pub fn fetch_food_image(id: u32) -> String {
+    // Parse the request body
+    // We do this to modify the query variables
+    let request_body_str = r#"{
+        "operationName":"foodQuery",
+        "variables":{
+            "id":0
+        },
+        "query":"query foodQuery($id: Int!) {\n  food(id: $id) {\n    id\n    name\n    description\n    canteenId\n    averageRating\n    similarNames {\n      alternateName\n      __typename\n    }\n    photos {\n      id\n      s3url\n      __typename\n    }\n    __typename\n  }\n}"
+    }"#;
+    let mut request_body: Value = serde_json::from_str(request_body_str).unwrap();
+    // Modifying the request body
+    request_body["variables"]["id"] = json!(id);
+
+    // Sending the request
+    let client = Client::new();
+    let image_response = client.post(API_URL)
+        .header("Content-Type", "application/json")
+        .body(serde_json::to_string(&request_body).unwrap())
+        .send().unwrap();
+
+    let serde_object: Value = serde_json::from_str(&image_response.text().unwrap()).unwrap();
+    // JSON formatting magic to return the s3 url
+    let photos = serde_object["data"]["food"]["photos"].as_array().unwrap();
+    let first_photo = match photos.get(0) {
+        Some(photo) => photo,
+        _ => return "".to_string(),
+    };
+    first_photo["s3url"].to_string()
+}
