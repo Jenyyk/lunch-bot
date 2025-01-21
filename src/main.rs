@@ -1,13 +1,45 @@
 mod lunch_fetch;
 mod embed;
 
-use serde_json::Value;
-use rand::Rng;
+
+use daemonize::Daemonize;
+use std::fs::File;
+use std::time::Duration;
+use std::thread::sleep;
+use chrono::{Local, NaiveTime};
 
 fn main() {
-    // food_loop(0);
+    // Setting up daemon
+    let daemon = Daemonize::new()
+        .pid_file("daemon.pid")
+        .stdout(File::create("stdout.log").unwrap())
+        .stderr(File::create("stderr.log").unwrap())
+        .working_directory(".");
+    let _ = daemon.start();
+
+    loop {
+        food_loop(0);
+        food_loop(1);
+        let now = Local::now();
+        let target_time = NaiveTime::from_hms(8, 0, 0); // 8:00 AM
+        // Determine the target datetime
+        let next_run = if now.time() < target_time {
+            // If it's before 8:00 AM today, schedule for today at 8:00 AM
+            now.date().and_time(target_time).unwrap()
+        } else {
+            // If it's past 8:00 AM, schedule for 8:00 AM the next day
+            now.date().succ().and_time(target_time).unwrap()
+        };
+        // Calculate the duration until the next run
+        let duration = next_run.signed_duration_since(now);
+
+        sleep(Duration::from_secs(duration.num_seconds() as u64));
+    }
 }
 
+
+use serde_json::Value;
+use rand::Rng;
 fn food_loop(days_forward: i16) {
     let food_struct: Value = lunch_fetch::fetch_food(days_forward as i64 * 86400_i64);
 
