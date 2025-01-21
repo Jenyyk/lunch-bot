@@ -5,8 +5,8 @@ const API_URL: &str = "https://apiv2.natacu.cz/graphql";
 use serde_json::{Value, json};
 use reqwest::blocking::Client;
 
-pub fn fetch_food() -> String {
-    let canteen_id: u8 = dotenv::var("CANTEEN_ID").unwrap().parse().unwrap();
+pub fn fetch_food() -> Value {
+    let canteen_id: u8 = dotenv::var("CANTEEN_ID").unwrap_or("1".to_string()).parse().unwrap_or(1);
     // Multiplied by 1000, because the API takes values in milliseconds, not seconds
     let timestamp: i64 = chrono::Utc::now().timestamp() * 1000;
     // Parse the request body
@@ -38,5 +38,5 @@ pub fn fetch_food() -> String {
         .body(serde_json::to_string(&request_body).unwrap())
         .send().unwrap();
 
-    food_response.text().unwrap()
+    serde_json::from_str(&food_response.text().unwrap()).unwrap()
 }
