@@ -45,9 +45,11 @@ fn food_loop(days_forward: i16) {
 
     // Getting todays Lunches
     let mut embed_array: Vec<embed::Embed> = Vec::new();
-    let offer_array = food_struct["data"]["canteenOffers"].as_array().unwrap()
-        .get(0).unwrap()
-        ["food"].as_array().unwrap();
+    // Must handle empty offers (weekends)
+    let offer_array = match food_struct["data"]["canteenOffers"].as_array().unwrap().get(0) {
+        Some(offer) => offer["food"].as_array().unwrap(),
+        None => return,
+    };
 
     // count which lunch i am on
     let mut lunch_counter: u8 = 1_u8;
