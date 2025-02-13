@@ -13,7 +13,10 @@ pub struct Embed {
 impl Embed {
     pub fn new(lunch_number: u8, lunch_name: &str, image_url: Option<String>, date: String, embed_color: u32, mut rating: String) -> Self {
         if rating == "null" { rating = "Bez hodnocení".to_string(); }
-        else { rating = (&rating[..3]).to_string(); }
+        else {
+            rating += ".0";
+            rating = (&rating[..3]).to_string();
+        }
         Self {
             author: Author{
                 name: ("Oběd ".to_string() + &lunch_number.to_string() + " · " + &date).to_string(),
